@@ -130,6 +130,13 @@ def main(
     output.write_text(csv_content, encoding="utf-8")
     typer.echo(f"Wrote {output}", err=True)
 
+    # Copy transcript to clipboard (macOS)
+    try:
+        subprocess.run(["pbcopy"], input=csv_content.encode(), check=True)
+        typer.echo("Transcript copied to clipboard", err=True)
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        pass
+
 
 if __name__ == "__main__":
     app()
