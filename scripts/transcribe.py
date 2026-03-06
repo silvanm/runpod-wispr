@@ -53,6 +53,7 @@ def main(
     prefix: str = typer.Option("meetings/", "--prefix", "-p", help="Object prefix in bucket"),
     runpod_api_key: str | None = typer.Option(None, "--runpod-api-key", envvar="RUNPOD_API_KEY"),
     endpoint_id: str | None = typer.Option(None, "--endpoint-id", envvar="ENDPOINT_ID"),
+    language: str | None = typer.Option(None, "--language", "-l", help="Language code (e.g. de, en). Auto-detected if omitted."),
     timeout_sec: int = typer.Option(600, "--timeout", "-t", help="Max seconds to wait for job"),
 ) -> None:
     """Upload FILE_PATH to GCS, call RunPod, write CSV to OUTPUT."""
@@ -101,7 +102,10 @@ def main(
 
     runpod.api_key = api_key
     endpoint = runpod.Endpoint(ep_id)
-    run_request = endpoint.run({"audio_url": audio_url})
+    payload = {"audio_url": audio_url}
+    if language:
+        payload["language"] = language
+    run_request = endpoint.run(payload)
     t0 = time.monotonic()
     try:
         out = run_request.output(timeout=timeout_sec)

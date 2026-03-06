@@ -128,7 +128,7 @@ def handler(job: dict) -> dict:
     audio_url = (job_input.get("audio_url") or "").strip()
     if not audio_url:
         return {"error": "Missing required input: audio_url"}
-    language = job_input.get("language") or "en"
+    language = job_input.get("language") or None
     model_size = job_input.get("model_size") or "base"
 
     downloaded_path = None
@@ -150,7 +150,7 @@ def handler(job: dict) -> dict:
 
         init_models()
         runpod.serverless.progress_update(job, "Transcribing")
-        result = _whisper_model.transcribe(audio, _batch_size)
+        result = _whisper_model.transcribe(audio, _batch_size, language=language)
         if not result or "segments" not in result:
             return {"error": "Transcription produced no segments"}
 
@@ -161,7 +161,7 @@ def handler(job: dict) -> dict:
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
         model_a, metadata = whisperx.load_align_model(
-            language_code=result.get("language", language),
+            language_code=result.get("language") or language or "en",
             device=_device,
         )
         result = whisperx.align(
