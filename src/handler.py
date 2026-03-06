@@ -94,27 +94,15 @@ def init_models():
     globals().update(_device=device, _compute_type=compute_type)
 
 
-def _fmt_time(seconds: float | None) -> str:
-    """Format seconds as HH:MM:SS.mmm."""
-    if seconds is None:
-        return ""
-    h = int(seconds // 3600)
-    m = int((seconds % 3600) // 60)
-    s = seconds % 60
-    return f"{h:02d}:{m:02d}:{s:06.3f}"
-
-
 def _segments_to_csv(segments: list[dict]) -> str:
-    """Aggregate segments by speaker into rows (start_time, end_time, speaker_id, utterance)."""
+    """Aggregate segments by speaker into rows (speaker_id, utterance)."""
     if not segments:
-        return "start_time,end_time,speaker_id,utterance\n"
+        return "speaker_id,utterance\n"
     out = io.StringIO()
     w = csv.writer(out, quoting=csv.QUOTE_MINIMAL)
-    w.writerow(["start_time", "end_time", "speaker_id", "utterance"])
+    w.writerow(["speaker_id", "utterance"])
     current_speaker = None
     current_text: list[str] = []
-    current_start: float | None = None
-    current_end: float | None = None
     for seg in segments:
         text = (seg.get("text") or "").strip()
         if not text:
@@ -122,16 +110,13 @@ def _segments_to_csv(segments: list[dict]) -> str:
         speaker = seg.get("speaker") or "SPEAKER_00"
         if speaker == current_speaker:
             current_text.append(text)
-            current_end = seg.get("end", current_end)
         else:
             if current_speaker is not None and current_text:
-                w.writerow([_fmt_time(current_start), _fmt_time(current_end), current_speaker, " ".join(current_text)])
+                w.writerow([current_speaker, " ".join(current_text)])
             current_speaker = speaker
             current_text = [text]
-            current_start = seg.get("start")
-            current_end = seg.get("end")
     if current_speaker is not None and current_text:
-        w.writerow([_fmt_time(current_start), _fmt_time(current_end), current_speaker, " ".join(current_text)])
+        w.writerow([current_speaker, " ".join(current_text)])
     return out.getvalue()
 
 

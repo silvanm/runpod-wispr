@@ -47,7 +47,7 @@ def _upload_and_signed_url(
 @app.command()
 def main(
     file_path: Path = typer.Argument(..., help="Local MP3 or MP4 file", path_type=Path),
-    output: Path = typer.Option(Path("transcript.csv"), "--output", "-o", help="Output CSV path", path_type=Path),
+    output: Path | None = typer.Option(None, "--output", "-o", help="Output CSV path (default: <input>.csv)", path_type=Path),
     bucket: str | None = typer.Option(None, "--bucket", "-b", help="GCS bucket (or GCS_BUCKET)"),
     prefix: str = typer.Option("meetings/", "--prefix", "-p", help="Object prefix in bucket"),
     runpod_api_key: str | None = typer.Option(None, "--runpod-api-key", envvar="RUNPOD_API_KEY"),
@@ -58,6 +58,9 @@ def main(
     if not file_path.exists() or not file_path.is_file():
         typer.echo(f"File not found: {file_path}", err=True)
         raise typer.Exit(1)
+
+    if output is None:
+        output = file_path.with_suffix(".csv")
 
     bucket_name = _get_env("GCS_BUCKET", bucket)
     api_key = _get_env("RUNPOD_API_KEY", runpod_api_key)
