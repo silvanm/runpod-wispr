@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import time
 from datetime import timedelta
 from pathlib import Path
 
@@ -101,11 +102,18 @@ def main(
     runpod.api_key = api_key
     endpoint = runpod.Endpoint(ep_id)
     run_request = endpoint.run({"audio_url": audio_url})
+    t0 = time.monotonic()
     try:
         out = run_request.output(timeout=timeout_sec)
     except Exception as e:
         typer.echo(f"RunPod error: {e}", err=True)
         raise typer.Exit(1)
+    elapsed = time.monotonic() - t0
+    mins, secs = divmod(int(elapsed), 60)
+    if mins:
+        typer.echo(f"Transcription completed in {mins}m {secs}s", err=True)
+    else:
+        typer.echo(f"Transcription completed in {secs}s", err=True)
 
     csv_content = None
     if isinstance(out, dict):
