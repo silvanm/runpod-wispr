@@ -85,7 +85,7 @@ def init_models():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     compute_type = "float16" if device == "cuda" else "float32"
     _whisper_model = whisperx.load_model(
-        "base",
+        "large-v3",
         device,
         compute_type=compute_type,
     )
