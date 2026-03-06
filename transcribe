@@ -5,7 +5,7 @@
 set -euo pipefail
 
 export GCS_BUCKET="${GCS_BUCKET:-mpom-shared-runpod-wispr}"
-export RUNPOD_API_KEY="${RUNPOD_API_KEY:-${RUNPOD_API_KEY}}"
+export RUNPOD_API_KEY="${RUNPOD_API_KEY:?Set RUNPOD_API_KEY environment variable}"
 export ENDPOINT_ID="${ENDPOINT_ID:-7ey0fnihpjzjkl}"
 
 SOURCE="$0"
