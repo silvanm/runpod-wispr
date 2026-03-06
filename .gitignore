@@ -9,3 +9,4 @@ __pycache__/
 *.plan.md
 uv.lock
 test_remote.py
+*.csv

@@ -5,6 +5,7 @@ Run locally: uv run scripts/transcribe.py meeting.mp4 -o transcript.csv
 from __future__ import annotations
 
 import os
+import subprocess
 from datetime import timedelta
 from pathlib import Path
 
@@ -62,7 +63,33 @@ def main(
     api_key = _get_env("RUNPOD_API_KEY", runpod_api_key)
     ep_id = _get_env("ENDPOINT_ID", endpoint_id)
 
-    typer.echo("Uploading to GCS ...", err=True)
+    # Show file info
+    file_size = file_path.stat().st_size
+    if file_size < 1024 * 1024:
+        size_str = f"{file_size / 1024:.1f} KB"
+    else:
+        size_str = f"{file_size / (1024 * 1024):.1f} MB"
+    duration_str = ""
+    try:
+        result = subprocess.run(
+            ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", str(file_path)],
+            capture_output=True, text=True,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            dur = float(result.stdout.strip())
+            mins, secs = divmod(int(dur), 60)
+            hours, mins = divmod(mins, 60)
+            if hours:
+                duration_str = f", duration: {hours}h {mins}m {secs}s"
+            elif mins:
+                duration_str = f", duration: {mins}m {secs}s"
+            else:
+                duration_str = f", duration: {secs}s"
+    except (FileNotFoundError, ValueError):
+        pass
+
+    typer.echo(f"Uploading {file_path.name} ({size_str}{duration_str}) to GCS ...", err=True)
     audio_url = _upload_and_signed_url(file_path, bucket_name, prefix, expiry_hours=2)
     typer.echo("Calling RunPod (waiting for result) ...", err=True)
 
