@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Transcribe an MP3/MP4 via RunPod serverless endpoint
+# Usage: transcribe meeting.mp4 -o transcript.csv
+
+set -euo pipefail
+
+export GCS_BUCKET="${GCS_BUCKET:-mpom-shared-runpod-wispr}"
+export RUNPOD_API_KEY="${RUNPOD_API_KEY:-${RUNPOD_API_KEY}}"
+export ENDPOINT_ID="${ENDPOINT_ID:-7ey0fnihpjzjkl}"
+
+SOURCE="$0"
+while [ -L "$SOURCE" ]; do
+  DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
+cd "$SCRIPT_DIR"
+exec uv run python scripts/transcribe.py "$@"

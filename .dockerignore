@@ -1,0 +1,16 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+.venv
+venv
+.env
+*.md
+tests
+scripts
+taskfile.yml
+Taskfile.yml
+pyproject.toml
+.cursor
+.idea
+*.plan.md

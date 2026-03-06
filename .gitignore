@@ -1,0 +1,11 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+.idea/
+.cursor/
+.omc/
+*.plan.md
+uv.lock
+test_remote.py

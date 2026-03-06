@@ -1,0 +1,5 @@
+# Local CLI scripts only (no GPU). Install with: uv pip install -r requirements-clients.txt
+# Or use: uv sync --group client
+typer[all]>=0.9.0
+google-cloud-storage>=2.0.0
+runpod>=1.7.0

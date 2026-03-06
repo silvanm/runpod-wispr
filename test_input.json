@@ -1,0 +1,7 @@
+{
+  "input": {
+    "audio_url": "https://example.com/path/to/meeting.mp3",
+    "language": "en",
+    "model_size": "base"
+  }
+}

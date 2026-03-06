@@ -1,0 +1,6 @@
+# Worker image deps (used by Dockerfile). For local CLI use: uv sync --group client
+runpod>=1.7.0
+whisperx>=3.1.0
+torch
+torchaudio
+requests

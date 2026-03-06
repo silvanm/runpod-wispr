@@ -1,0 +1,51 @@
+# Taskfile for runpod-wispr (Silvan / m+p)
+# Run with: task <task> (https://taskfile.dev)
+
+version: "3"
+
+vars:
+  UV: uv
+  PY: "{{.UV}} run python"
+  SCRIPT_DIR: scripts
+
+tasks:
+  venv:
+    desc: Create .venv and install default deps (client only for local scripts)
+    cmds:
+      - "{{.UV}} venv"
+      - "{{.UV}} sync --group client"
+
+  venv-worker:
+    desc: Install worker deps (for local handler testing with GPU)
+    cmds:
+      - "{{.UV}} sync --group client --group worker"
+
+  upload:
+    desc: Upload a local file to GCS and print signed URL (e.g. task upload -- meeting.mp4)
+    cmds:
+      - "{{.PY}} {{.SCRIPT_DIR}}/upload_to_gcs.py {{.CLI_ARGS}}"
+
+  transcribe:
+    desc: Upload to GCS, call RunPod, save CSV (e.g. task transcribe -- meeting.mp4 -o out.csv)
+    cmds:
+      - "{{.PY}} {{.SCRIPT_DIR}}/transcribe.py {{.CLI_ARGS}}"
+
+  test-handler:
+    desc: Run handler locally with test_input.json (needs GPU, HF_TOKEN)
+    dir: "{{.ROOT_DIR}}"
+    cmds:
+      - "{{.PY}} src/handler.py"
+
+  docker-build:
+    desc: Build Docker image for RunPod serverless worker (cross-compile for amd64)
+    vars:
+      IMAGE: silvanm/runpod-wispr:latest
+    cmds:
+      - docker buildx build --platform linux/amd64 -t {{.IMAGE}} --push .
+
+  docker-run:
+    desc: Run worker container locally (for testing)
+    cmds:
+      - docker run --rm --gpus all -e HF_TOKEN={{.HF_TOKEN}} runpod-wispr
+    vars:
+      HF_TOKEN: ""
